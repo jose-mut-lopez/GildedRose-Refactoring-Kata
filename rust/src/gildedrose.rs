@@ -1,4 +1,5 @@
 use std::fmt::{self, Display};
+
 pub struct Item {
     pub name: String,
     pub sell_in: i32,
@@ -25,6 +26,8 @@ pub struct GildedRose {
     pub items: Vec<Item>,
 }
 
+const SULFURAS: &'static str = "Sulfuras, Hand of Ragnaros";
+
 impl GildedRose {
     pub fn new(items: Vec<Item>) -> GildedRose {
         GildedRose { items }
@@ -32,12 +35,16 @@ impl GildedRose {
 
     pub fn update_quality(&mut self) {
         for item in &mut self.items {
+            Self::update_quality_single_item(item)
+        }
+    }
+
+    fn update_quality_single_item(item: &mut Item) {
+        if item.name == SULFURAS {} else {
             if item.name != "Aged Brie" && item.name != "Backstage passes to a TAFKAL80ETC concert"
             {
                 if item.quality > 0 {
-                    if item.name != "Sulfuras, Hand of Ragnaros" {
-                        item.quality = item.quality - 1;
-                    }
+                    item.quality = item.quality - 1;
                 }
             } else {
                 if item.quality < 50 {
@@ -59,17 +66,13 @@ impl GildedRose {
                 }
             }
 
-            if item.name != "Sulfuras, Hand of Ragnaros" {
-                item.sell_in = item.sell_in - 1;
-            }
+            item.sell_in = item.sell_in - 1;
 
             if item.sell_in < 0 {
                 if item.name != "Aged Brie" {
                     if item.name != "Backstage passes to a TAFKAL80ETC concert" {
                         if item.quality > 0 {
-                            if item.name != "Sulfuras, Hand of Ragnaros" {
-                                item.quality = item.quality - 1;
-                            }
+                            item.quality = item.quality - 1;
                         }
                     } else {
                         item.quality = item.quality - item.quality;
@@ -148,7 +151,11 @@ mod tests {
 
     #[test]
     fn test_passes_increase_quality() {
-        let items = vec![Item::new("Backstage passes to a TAFKAL80ETC concert", 6, 10)];
+        let items = vec![Item::new(
+            "Backstage passes to a TAFKAL80ETC concert",
+            6,
+            10,
+        )];
         let mut rose = GildedRose::new(items);
 
         rose.update_quality();
