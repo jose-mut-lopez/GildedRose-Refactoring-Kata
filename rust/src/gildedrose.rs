@@ -29,6 +29,7 @@ pub struct GildedRose {
 const SULFURAS: &'static str = "Sulfuras, Hand of Ragnaros";
 const BACKSTAGE_PASSES: &'static str = "Backstage passes to a TAFKAL80ETC concert";
 const BRIE: &'static str = "Aged Brie";
+const CONJURED: &'static str = "Conjured";
 
 impl GildedRose {
     pub fn new(items: Vec<Item>) -> GildedRose {
@@ -48,6 +49,8 @@ impl GildedRose {
             Self::update_quality_backstage_passes(item);
         } else if item.name == BRIE {
             Self::update_quality_brie(item)
+        } else if item.name == CONJURED {
+            Self::update_quality_conjured(item)
         } else {
             Self::update_quality_normal_item(item)
         }
@@ -78,6 +81,18 @@ impl GildedRose {
             item.quality = 0;
         }
         item.sell_in -= 1;
+    }
+
+    fn update_quality_conjured(item: &mut Item) {
+        Self::decrease_quality(item);
+        Self::decrease_quality(item);
+
+        item.sell_in = item.sell_in - 1;
+
+        if item.sell_in < 0 {
+            Self::decrease_quality(item);
+            Self::decrease_quality(item);
+        }
     }
 
     fn update_quality_normal_item(item: &mut Item) {
@@ -196,5 +211,19 @@ mod tests {
         rose.items[0].sell_in = 0;
         rose.update_quality();
         assert_eq!(rose.items[0].quality, 0);
+    }
+
+    #[test]
+    fn test_conjured_decrease_quality_twice_as_fast() {
+        let items = vec![Item::new(
+            "Conjured",
+            6,
+            10,
+        )];
+        let mut rose = GildedRose::new(items);
+
+        rose.update_quality();
+        assert_eq!(rose.items[0].sell_in, 5);
+        assert_eq!(rose.items[0].quality, 8);
     }
 }
