@@ -42,41 +42,62 @@ impl GildedRose {
     }
 
     fn update_quality_single_item(item: &mut Item) {
-        if item.name == SULFURAS {} else if item.name == BACKSTAGE_PASSES {
-            if item.sell_in <= 10 {
-                item.quality += 2;
-            }
-            if item.sell_in <= 5 {
-                item.quality += 1;
-            }
-            if item.sell_in <= 0 {
-                item.quality = 0;
-            }
-            if item.quality > 50 {
-                item.quality = 50;
-            }
-            item.sell_in -= 1;
+        if item.name == SULFURAS {
+            Self::update_quality_sulfuras(item);
+        } else if item.name == BACKSTAGE_PASSES {
+            Self::update_quality_backstage_passes(item);
         } else if item.name == BRIE {
-            if item.quality < 50 {
-                item.quality = item.quality + 1;
-            }
-            if item.sell_in < 0 {
-                if item.quality < 50 {
-                    item.quality = item.quality + 1;
-                }
-            }
+            Self::update_quality_brie(item)
         } else {
-            if item.quality > 0 {
-                item.quality = item.quality - 1;
-            }
+            Self::update_quality_normal_item(item)
+        }
+    }
 
-            item.sell_in = item.sell_in - 1;
+    /// "Sulfuras", being a legendary item, never has to be sold or decreases in Quality
+    fn update_quality_sulfuras(_item: &mut Item) {
 
-            if item.sell_in < 0 {
-                if item.quality > 0 {
-                    item.quality = item.quality - 1;
-                }
-            }
+    }
+
+    fn update_quality_brie(item: &mut Item) {
+        Self::increase_quality(item);
+        if item.sell_in < 0 {
+            Self::increase_quality(item);
+        }
+    }
+
+    fn update_quality_backstage_passes(item: &mut Item) {
+        if item.sell_in <= 10 {
+            Self::increase_quality(item);
+            Self::increase_quality(item);
+        }
+        if item.sell_in <= 5 {
+            Self::increase_quality(item);
+        }
+        if item.sell_in <= 0 {
+            item.quality = 0;
+        }
+        item.sell_in -= 1;
+    }
+
+    fn update_quality_normal_item(item: &mut Item) {
+        Self::decrease_quality(item);
+
+        item.sell_in = item.sell_in - 1;
+
+        if item.sell_in < 0 {
+            Self::decrease_quality(item);
+        }
+    }
+
+    fn decrease_quality(item: &mut Item) {
+        if item.quality > 0 {
+            item.quality -= 1;
+        }
+    }
+
+    fn increase_quality(item: &mut Item) {
+        if item.quality < 50 {
+            item.quality += 1;
         }
     }
 }
