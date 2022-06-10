@@ -67,8 +67,8 @@ impl GildedRose {
     }
 
     fn update_quality_backstage_passes(item: &mut Item) {
+        Self::increase_quality(item);
         if item.sell_in <= 10 {
-            Self::increase_quality(item);
             Self::increase_quality(item);
         }
         if item.sell_in <= 5 {
