@@ -59,6 +59,7 @@ impl GildedRose {
     }
 
     fn update_quality_brie(item: &mut Item) {
+        item.sell_in -= 1;
         Self::increase_quality(item);
         if item.sell_in < 0 {
             Self::increase_quality(item);
