@@ -27,6 +27,8 @@ pub struct GildedRose {
 }
 
 const SULFURAS: &'static str = "Sulfuras, Hand of Ragnaros";
+const BACKSTAGE_PASSES: &'static str = "Backstage passes to a TAFKAL80ETC concert";
+const BRIE: &'static str = "Aged Brie";
 
 impl GildedRose {
     pub fn new(items: Vec<Item>) -> GildedRose {
@@ -40,8 +42,7 @@ impl GildedRose {
     }
 
     fn update_quality_single_item(item: &mut Item) {
-        if item.name == SULFURAS {
-        } else if item.name == "Backstage passes to a TAFKAL80ETC concert" {
+        if item.name == SULFURAS {} else if item.name == BACKSTAGE_PASSES {
             if item.sell_in <= 10 {
                 item.quality += 2;
             }
@@ -55,8 +56,17 @@ impl GildedRose {
                 item.quality = 50;
             }
             item.sell_in -= 1;
+        } else if item.name == BRIE {
+            if item.quality < 50 {
+                item.quality = item.quality + 1;
+            }
+            if item.sell_in < 0 {
+                if item.quality < 50 {
+                    item.quality = item.quality + 1;
+                }
+            }
         } else {
-            if item.name != "Aged Brie" {
+            if item.name != BRIE {
                 if item.quality > 0 {
                     item.quality = item.quality - 1;
                 }
@@ -69,10 +79,10 @@ impl GildedRose {
             item.sell_in = item.sell_in - 1;
 
             if item.sell_in < 0 {
-                if item.name != "Aged Brie" {
-                        if item.quality > 0 {
-                            item.quality = item.quality - 1;
-                        }
+                if item.name != BRIE {
+                    if item.quality > 0 {
+                        item.quality = item.quality - 1;
+                    }
                 } else {
                     if item.quality < 50 {
                         item.quality = item.quality + 1;
@@ -132,6 +142,7 @@ mod tests {
 
         assert_eq!(rose.items[0].quality, 50);
     }
+
     #[test]
     fn test_pass_does_not_increase_over_50() {
         let items = vec![Item::new("Backstage passes to a TAFKAL80ETC concert", 10, 45)];
