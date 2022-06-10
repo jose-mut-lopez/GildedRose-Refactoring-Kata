@@ -89,11 +89,78 @@ mod tests {
     use super::{GildedRose, Item};
 
     #[test]
-    pub fn foo() {
-        let items = vec![Item::new("foo", 0, 0)];
+    fn test_quality_degrades_twice_as_fast() {
+        let items = vec![Item::new("Elixir of the Mongoose", 1, 10)];
         let mut rose = GildedRose::new(items);
         rose.update_quality();
 
-        assert_eq!("fixme", rose.items[0].name);
+        assert_eq!(rose.items[0].quality, 9);
+        assert_eq!(rose.items[0].sell_in, 0);
+
+        rose.update_quality();
+
+        assert_eq!(rose.items[0].quality, 7);
+        assert_eq!(rose.items[0].sell_in, -1);
+    }
+
+    #[test]
+    fn test_quality_never_negative() {
+        let items = vec![Item::new("Elixir of the Mongoose", 1, 10)];
+        let mut rose = GildedRose::new(items);
+        for _i in 0..100 {
+            rose.update_quality();
+        }
+
+        assert!(rose.items[0].quality >= 0);
+    }
+
+    #[test]
+    fn test_brie_increases_quality() {
+        let items = vec![Item::new("Aged Brie", 1, 10)];
+        let mut rose = GildedRose::new(items);
+        rose.update_quality();
+
+        assert_eq!(rose.items[0].quality, 11);
+    }
+
+    #[test]
+    fn test_brie_does_not_increase_over_50() {
+        let items = vec![Item::new("Aged Brie", 1, 10)];
+        let mut rose = GildedRose::new(items);
+        for _i in 0..120 {
+            rose.update_quality();
+        }
+
+        assert_eq!(rose.items[0].quality, 50);
+    }
+
+    #[test]
+    fn test_immutable_sulfuras() {
+        let items = vec![Item::new("Sulfuras, Hand of Ragnaros", 5, 10)];
+        let mut rose = GildedRose::new(items);
+        for _i in 0..120 {
+            rose.update_quality();
+        }
+
+        assert_eq!(rose.items[0].sell_in, 5);
+        assert_eq!(rose.items[0].quality, 10);
+    }
+
+    #[test]
+    fn test_passes_increase_quality() {
+        let items = vec![Item::new("Backstage passes to a TAFKAL80ETC concert", 6, 10)];
+        let mut rose = GildedRose::new(items);
+
+        rose.update_quality();
+        assert_eq!(rose.items[0].sell_in, 5);
+        assert_eq!(rose.items[0].quality, 12);
+
+        rose.update_quality();
+        assert_eq!(rose.items[0].sell_in, 4);
+        assert_eq!(rose.items[0].quality, 15);
+
+        rose.items[0].sell_in = 0;
+        rose.update_quality();
+        assert_eq!(rose.items[0].quality, 0);
     }
 }
