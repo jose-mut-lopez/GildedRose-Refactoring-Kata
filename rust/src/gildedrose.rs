@@ -43,13 +43,13 @@ impl GildedRose {
     }
 
     fn update_quality_single_item(item: &mut Item) {
-        if item.name == SULFURAS {
+        if item.name.starts_with(SULFURAS) {
             Self::update_quality_sulfuras(item);
-        } else if item.name == BACKSTAGE_PASSES {
+        } else if item.name.starts_with(BACKSTAGE_PASSES) {
             Self::update_quality_backstage_passes(item);
-        } else if item.name == BRIE {
+        } else if item.name.starts_with(BRIE) {
             Self::update_quality_brie(item)
-        } else if item.name == CONJURED {
+        } else if item.name.starts_with(CONJURED) {
             Self::update_quality_conjured(item)
         } else {
             Self::update_quality_normal_item(item)
@@ -216,7 +216,7 @@ mod tests {
     #[test]
     fn test_conjured_decrease_quality_twice_as_fast() {
         let items = vec![Item::new(
-            "Conjured",
+            "Conjured Mana Cake",
             6,
             10,
         )];
