@@ -89,20 +89,17 @@ mod tests {
     use super::{GildedRose, Item};
 
     #[test]
-    pub fn test_basic_item() {
-        let items = vec![Item::new("basic item", 1, 10)];
+    fn test_basic_item_several_days() {
+        let items = vec![Item::new("basic item", 5, 10)];
         let mut rose = GildedRose::new(items);
-        rose.update_quality();
-        assert_eq!(rose.items[0].quality, 9);
-        assert_eq!(rose.items[0].sell_in, 0);
-    }
-
-    #[test]
-    pub fn test_basic_item_expired() {
-        let items = vec![Item::new("basic item", 0, 10)];
-        let mut rose = GildedRose::new(items);
-        rose.update_quality();
-        assert_eq!(rose.items[0].quality, 8);
-        assert_eq!(rose.items[0].sell_in, -1);
+        let mut qualities = Vec::new();
+        let mut sell_in_days = Vec::new();
+        for _i in 0..10 {
+            rose.update_quality();
+            qualities.push(rose.items[0].quality);
+            sell_in_days.push(rose.items[0].sell_in);
+        }
+        assert_eq!(qualities, vec![9, 8, 7, 6, 5, 3, 1, 0, 0, 0]);
+        assert_eq!(sell_in_days, vec![4, 3, 2, 1, 0, -1, -2, -3, -4, -5]);
     }
 }
