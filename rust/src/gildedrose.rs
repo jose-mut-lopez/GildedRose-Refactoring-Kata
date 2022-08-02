@@ -89,11 +89,20 @@ mod tests {
     use super::{GildedRose, Item};
 
     #[test]
-    pub fn foo() {
-        let items = vec![Item::new("foo", 0, 0)];
+    pub fn test_basic_item() {
+        let items = vec![Item::new("basic item", 1, 10)];
         let mut rose = GildedRose::new(items);
         rose.update_quality();
+        assert_eq!(rose.items[0].quality, 9);
+        assert_eq!(rose.items[0].sell_in, 0);
+    }
 
-        assert_eq!("fixme", rose.items[0].name);
+    #[test]
+    pub fn test_basic_item_expired() {
+        let items = vec![Item::new("basic item", 0, 10)];
+        let mut rose = GildedRose::new(items);
+        rose.update_quality();
+        assert_eq!(rose.items[0].quality, 8);
+        assert_eq!(rose.items[0].sell_in, -1);
     }
 }
