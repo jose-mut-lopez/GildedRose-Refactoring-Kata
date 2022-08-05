@@ -116,6 +116,54 @@ mod tests {
     }
 
     #[test]
+    fn test_aged_brie_several_days() {
+        let items = vec![Item::new("Aged Brie", 5, 10)];
+        let mut rose = GildedRose::new(items);
+        let mut qualities = Vec::new();
+        let mut sell_in_days = Vec::new();
+        for _i in 0..10 {
+            rose.update_quality();
+            let item = &rose.items[0];
+            qualities.push(item.quality);
+            sell_in_days.push(item.sell_in);
+        }
+        assert_eq!(qualities, vec![11, 12, 13, 14, 15, 17, 19, 21, 23, 25]);
+        assert_eq!(sell_in_days, vec![4, 3, 2, 1, 0, -1, -2, -3, -4, -5]);
+    }
+
+    #[test]
+    fn test_backstage_passes_several_days() {
+        let items = vec![Item::new("Backstage passes to a TAFKAL80ETC concert", 11, 10)];
+        let mut rose = GildedRose::new(items);
+        let mut qualities = Vec::new();
+        let mut sell_in_days = Vec::new();
+        for _i in 0..14 {
+            rose.update_quality();
+            let item = &rose.items[0];
+            qualities.push(item.quality);
+            sell_in_days.push(item.sell_in);
+        }
+        assert_eq!(qualities, vec![11, 13, 15, 17, 19, 21, 24, 27, 30, 33, 36, 0, 0, 0]);
+        assert_eq!(sell_in_days, vec![10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3]);
+    }
+
+    #[test]
+    fn test_sulfuras_several_days() {
+        let items = vec![Item::new("Sulfuras, Hand of Ragnaros", 5, 10)];
+        let mut rose = GildedRose::new(items);
+        let mut qualities = Vec::new();
+        let mut sell_in_days = Vec::new();
+        for _i in 0..10 {
+            rose.update_quality();
+            let item = &rose.items[0];
+            qualities.push(item.quality);
+            sell_in_days.push(item.sell_in);
+        }
+        assert_eq!(qualities, vec![10, 10, 10, 10, 10, 10, 10, 10, 10, 10]);
+        assert_eq!(sell_in_days, vec![5, 5, 5, 5, 5, 5, 5, 5, 5, 5]);
+    }
+
+    #[test]
     fn test_conjured_item() {
         // if before sell_in, quality degrades
         // create single item
