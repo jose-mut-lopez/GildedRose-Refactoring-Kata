@@ -84,8 +84,19 @@ impl GildedRose {
     }
 }
 
+
+fn update_quality_conjured(item: &mut Item) {
+    item.sell_in -= 1;
+    if item.sell_in < 0 {
+        item.quality -= 4;
+    } else {
+        item.quality -= 2;
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::gildedrose::update_quality_conjured;
     use super::{GildedRose, Item};
 
     #[test]
@@ -96,10 +107,29 @@ mod tests {
         let mut sell_in_days = Vec::new();
         for _i in 0..10 {
             rose.update_quality();
-            qualities.push(rose.items[0].quality);
-            sell_in_days.push(rose.items[0].sell_in);
+            let item = &rose.items[0];
+            qualities.push(item.quality);
+            sell_in_days.push(item.sell_in);
         }
         assert_eq!(qualities, vec![9, 8, 7, 6, 5, 3, 1, 0, 0, 0]);
+        assert_eq!(sell_in_days, vec![4, 3, 2, 1, 0, -1, -2, -3, -4, -5]);
+    }
+
+    #[test]
+    fn test_conjured_item() {
+        // if before sell_in, quality degrades
+        // create single item
+        let mut item = Item::new("Conjured pants", 5, 40);
+        let mut qualities = Vec::new();
+        let mut sell_in_days = Vec::new();
+        for _i in 0..10 {
+            update_quality_conjured(&mut item);
+            qualities.push(item.quality);
+            sell_in_days.push(item.sell_in);
+        }
+        // TODO: test that quality doesn't go below 0
+        // TODO: split into 3 tests
+        assert_eq!(qualities, vec![38, 36, 34, 32, 30, 26, 22, 18, 14, 10]);
         assert_eq!(sell_in_days, vec![4, 3, 2, 1, 0, -1, -2, -3, -4, -5]);
     }
 }
