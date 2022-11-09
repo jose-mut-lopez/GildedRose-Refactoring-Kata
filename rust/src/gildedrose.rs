@@ -22,82 +22,83 @@ impl Display for Item {
 }
 
 pub struct GildedRose {
-    pub items: Vec<Item>,
+    pub items: Vec<Box<dyn Perishable>>,
 }
 
 impl GildedRose {
     pub fn new(items: Vec<Item>) -> GildedRose {
-        GildedRose { items }
+        let mut perishables = Vec::new();
+        for item in items {
+            let perishable = build_perishable(item);
+            perishables.push(Box::new(perishable));
+        }
+        GildedRose { items: perishables }
     }
 
     pub fn update_quality(&mut self) {
-        for item in &mut self.items {
-            if item.name != "Aged Brie" && item.name != "Backstage passes to a TAFKAL80ETC concert"
-            {
-                if item.quality > 0 {
-                    if item.name != "Sulfuras, Hand of Ragnaros" {
-                        item.quality = item.quality - 1;
-                    }
-                }
-            } else {
-                if item.quality < 50 {
-                    item.quality = item.quality + 1;
-
-                    if item.name == "Backstage passes to a TAFKAL80ETC concert" {
-                        if item.sell_in < 11 {
-                            if item.quality < 50 {
-                                item.quality = item.quality + 1;
-                            }
-                        }
-
-                        if item.sell_in < 6 {
-                            if item.quality < 50 {
-                                item.quality = item.quality + 1;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if item.name != "Sulfuras, Hand of Ragnaros" {
-                item.sell_in = item.sell_in - 1;
-            }
-
-            if item.sell_in < 0 {
-                if item.name != "Aged Brie" {
-                    if item.name != "Backstage passes to a TAFKAL80ETC concert" {
-                        if item.quality > 0 {
-                            if item.name != "Sulfuras, Hand of Ragnaros" {
-                                item.quality = item.quality - 1;
-                            }
-                        }
-                    } else {
-                        item.quality = item.quality - item.quality;
-                    }
-                } else {
-                    if item.quality < 50 {
-                        item.quality = item.quality + 1;
-                    }
-                }
-            }
+        for perishable in &mut self.items {
+            perishable.update();
         }
     }
 }
 
+enum ItemType {
+    Normal,
+    Conjured,
+    // etc
+}
+fn build_perishable(item: Item) -> Box<dyn Perishable> {
+    Box::new(NormalItem{item})
+}
+trait Perishable {
+    fn update(&mut self);
+    fn get_type(&self) -> ItemType;
+}
 
-fn update_quality_conjured(item: &mut Item) {
-    item.sell_in -= 1;
-    if item.sell_in < 0 {
-        item.quality -= 4;
-    } else {
-        item.quality -= 2;
+struct NormalItem {
+    item: Item,
+}
+
+impl Perishable for NormalItem {
+    fn update(&mut self) {
+        todo!()
     }
+
+    fn get_type(&self) -> ItemType {
+        ItemType::Normal
+    }
+}
+
+const CONJURED_DEGRADING_RATE: i32 = 2;
+const EXPIRED_DEGRADING_RATE: i32 = 2;
+const DEGRADING_RATE: i32 = 1;
+const MINIMUM_QUALITY: i32 = 0;
+
+fn update_conjured(item: &mut Item) {
+    item.sell_in -= 1;
+    if is_expired(item) {
+        item.quality -= CONJURED_DEGRADING_RATE * EXPIRED_DEGRADING_RATE;
+    } else {
+        item.quality -= CONJURED_DEGRADING_RATE * DEGRADING_RATE;
+    }
+    item.quality = i32::max(item.quality, MINIMUM_QUALITY);
+}
+
+fn is_expired(item: &mut Item) -> bool {
+    item.sell_in < 0
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::gildedrose::update_quality_conjured;
+    use crate::gildedrose::update_conjured;
     use super::{GildedRose, Item};
+    use super::*;
+
+    #[test]
+    fn test_build_perishable() {
+        let p = build_perishable(Item::new("normal item", 0, 0));
+        assert_eq!(p.get_type(), ItemType::Normal);
+    }
 
     #[test]
     fn test_basic_item_several_days() {
@@ -164,20 +165,31 @@ mod tests {
     }
 
     #[test]
-    fn test_conjured_item() {
-        // if before sell_in, quality degrades
-        // create single item
+    fn test_conjured_decrease_by_2_then_4_when_expired() {
         let mut item = Item::new("Conjured pants", 5, 40);
         let mut qualities = Vec::new();
         let mut sell_in_days = Vec::new();
         for _i in 0..10 {
-            update_quality_conjured(&mut item);
+            update_conjured(&mut item);
             qualities.push(item.quality);
             sell_in_days.push(item.sell_in);
         }
-        // TODO: test that quality doesn't go below 0
-        // TODO: split into 3 tests
+        // TODO: split in 2 loops and 2 sets of assertions
         assert_eq!(qualities, vec![38, 36, 34, 32, 30, 26, 22, 18, 14, 10]);
         assert_eq!(sell_in_days, vec![4, 3, 2, 1, 0, -1, -2, -3, -4, -5]);
+    }
+
+    #[test]
+    fn test_conjured_value_is_never_negative() {
+        let mut item = Item::new("Conjured pants", 3, 3);
+        let mut qualities = Vec::new();
+        let mut sell_in_days = Vec::new();
+        for _i in 0..4 {
+            update_conjured(&mut item);
+            qualities.push(item.quality);
+            sell_in_days.push(item.sell_in);
+        }
+        assert_eq!(qualities, vec![1, 0, 0, 0]);
+        assert_eq!(sell_in_days, vec![2, 1, 0, -1]);
     }
 }
