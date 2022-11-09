@@ -1,4 +1,5 @@
 use std::fmt::{self, Display};
+use std::fmt::rt::v1::Count::Param;
 
 pub struct Item {
     pub name: String,
@@ -31,6 +32,18 @@ const BACKSTAGE_PASSES: &'static str = "Backstage passes to a TAFKAL80ETC concer
 const BRIE: &'static str = "Aged Brie";
 const CONJURED: &'static str = "Conjured";
 
+trait Asdf {
+    fn default_method() {
+        println!("asdf")
+    }
+}
+
+/* comments:
+- all behaviour for all items is in the same file, no encapsulation
+    - if quality limits change by item, this solution is insufficient
+- easy to screw up the  if-else because you have to manually pair the prefix with the update function
+- make increase_quality to take a parameter
+ */
 impl GildedRose {
     pub fn new(items: Vec<Item>) -> GildedRose {
         GildedRose { items }
